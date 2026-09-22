@@ -1,0 +1,24 @@
+%%writefile app.py
+from shiny import App, ui, render
+from Bio import SeqIO
+
+record = next(SeqIO.parse("gene.fna", "fasta"))
+
+def gc_content(seq):
+    g = seq.count("G")
+    c = seq.count("C")
+    return (g + c) / len(seq) * 100
+
+app_ui = ui.page_fluid(
+    ui.h2("DNA Sequence Analyzer"),
+    ui.p(f"Gene ID: {record.id}"),
+    ui.output_text_verbatim("summary")
+)
+
+def server(input, output, session):
+    @render.text
+    def summary():
+        gc = gc_content(record.seq)
+        return f"Length: {len(record.seq)} bases\nGC Content: {gc:.2f}%"
+
+app = App(app_ui, server)
